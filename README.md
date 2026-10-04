@@ -21,6 +21,32 @@ A tiny in-memory ledger API: record deposits and withdrawals, view the current b
 
 The API starts on `http://localhost:8080`.
 
+### Demo data
+
+On every startup the ledger is seeded with four demo transactions (by `DemoDataSeeder`), so there is something to
+look at straight away:
+
+| Type | Amount | Description |
+|---|---|---|
+| `DEPOSIT` | `1000.00` | salary |
+| `WITHDRAWAL` | `45.50` | groceries |
+| `WITHDRAWAL` | `120.00` | utilities |
+| `DEPOSIT` | `250.00` | freelance |
+
+Starting balance: **`1084.50`**. The examples below continue from this state.
+
+### Postman
+
+Import [`postman/tiny-ledger.postman_collection.json`](postman/tiny-ledger.postman_collection.json) into Postman. It
+covers every endpoint plus the error cases, and each request has tests on the response. `baseUrl` defaults to
+`http://localhost:8080`; "Record deposit" stores the new id in `transactionId` for "Get transaction by id".
+
+To run it from the command line against a running app:
+
+```bash
+npx newman run postman/tiny-ledger.postman_collection.json
+```
+
 ## Test
 
 ```bash
@@ -85,7 +111,7 @@ curl localhost:8080/api/v1/balance
 ```
 
 ```json
-{"balance":"70.00"}
+{"balance":"1154.50"}
 ```
 
 ### View the transaction history
@@ -97,7 +123,8 @@ curl localhost:8080/api/v1/transactions
 ```json
 [
   {"id":"55016b7c-ee64-439f-8247-2561ce2ea7cd","type":"WITHDRAWAL","amount":"30.00","description":"groceries","timestamp":"2026-10-04T13:30:55.686093Z"},
-  {"id":"889d2bb4-a863-48d9-b6d1-64754fd9fd56","type":"DEPOSIT","amount":"100.00","description":"salary","timestamp":"2026-10-04T13:30:55.670449Z"}
+  {"id":"889d2bb4-a863-48d9-b6d1-64754fd9fd56","type":"DEPOSIT","amount":"100.00","description":"salary","timestamp":"2026-10-04T13:30:55.670449Z"},
+  ... the 4 demo transactions ...
 ]
 ```
 
@@ -122,14 +149,14 @@ Withdrawing more than the current balance:
 ```bash
 curl -i -X POST localhost:8080/api/v1/transactions \
   -H 'Content-Type: application/json' \
-  -d '{"type":"WITHDRAWAL","amount":"1000.00"}'
+  -d '{"type":"WITHDRAWAL","amount":"5000.00"}'
 ```
 
 ```http
 HTTP/1.1 422
 Content-Type: application/problem+json
 
-{"type":"about:blank","title":"Insufficient funds","status":422,"detail":"Insufficient funds: requested 1000.00 but current balance is 70.00","instance":"/api/v1/transactions","requestedAmount":"1000.00","currentBalance":"70.00"}
+{"type":"about:blank","title":"Insufficient funds","status":422,"detail":"Insufficient funds: requested 5000.00 but current balance is 1154.50","instance":"/api/v1/transactions","requestedAmount":"5000.00","currentBalance":"1154.50"}
 ```
 
 Invalid amount (non-positive, more than 2 decimal places, or missing):
@@ -161,7 +188,7 @@ Malformed JSON or an unknown `type` returns `400` with `"title":"Malformed reque
   recorded; timestamps are assigned under the same lock as the append, so the two orders always agree.
 - Transaction IDs are server-generated UUIDs; timestamps are server-generated UTC instants.
 - Optional free-text `description` field (max 255 characters) on a transaction.
-- Data is lost on restart.
+- Data is lost on restart; every start begins from the same demo data (see [Demo data](#demo-data)).
 - Out of scope: authentication/authorization, logging/monitoring, persistence, idempotency keys.
   Concurrency is handled with a single lock in the `Ledger` (see below), so it stays consistent under concurrent
   requests without extra infrastructure.
