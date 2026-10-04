@@ -14,24 +14,44 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
+/**
+ * Each test gets a fresh context, so it starts from exactly the demo data seeded on startup: 4 transactions and a
+ * balance of 1084.50.
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class LedgerApiIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Test
+    void demoDataIsAvailableOnStartup() {
+        // Act
+        ResponseEntity<JsonNode> balance = restTemplate.getForEntity("/api/v1/balance", JsonNode.class);
+        ResponseEntity<JsonNode> history = restTemplate.getForEntity("/api/v1/transactions", JsonNode.class);
+
+        // Assert
+        assertThat(balance.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(balance.getBody().get("balance").asText()).isEqualTo("1084.50");
+
+        assertThat(history.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(history.getBody()).hasSize(4);
+        assertThat(history.getBody().get(0).get("description").asText()).isEqualTo("freelance");
+        assertThat(history.getBody().get(3).get("description").asText()).isEqualTo("salary");
+    }
+
+    @Test
     void depositWithdrawAndOverdraftFlow() {
         // Arrange
         String deposit = """
-                {"type":"DEPOSIT","amount":"100.00","description":"salary"}
+                {"type":"DEPOSIT","amount":"100.00","description":"bonus"}
                 """;
         String withdrawal = """
-                {"type":"WITHDRAWAL","amount":"30.00","description":"groceries"}
+                {"type":"WITHDRAWAL","amount":"30.00","description":"dinner"}
                 """;
         String overdraft = """
-                {"type":"WITHDRAWAL","amount":"1000.00"}
+                {"type":"WITHDRAWAL","amount":"5000.00"}
                 """;
 
         // Act
@@ -51,15 +71,16 @@ class LedgerApiIntegrationTest {
         assertThat(withdrawalResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         assertThat(balanceAfterWithdrawal.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(balanceAfterWithdrawal.getBody().get("balance").asText()).isEqualTo("70.00");
+        assertThat(balanceAfterWithdrawal.getBody().get("balance").asText()).isEqualTo("1154.50");
 
         assertThat(history.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(history.getBody()).hasSize(2);
-        assertThat(history.getBody().get(0).get("type").asText()).isEqualTo("WITHDRAWAL");
-        assertThat(history.getBody().get(1).get("type").asText()).isEqualTo("DEPOSIT");
+        assertThat(history.getBody()).hasSize(6);
+        assertThat(history.getBody().get(0).get("description").asText()).isEqualTo("dinner");
+        assertThat(history.getBody().get(1).get("description").asText()).isEqualTo("bonus");
 
         assertThat(overdraftResponse.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(balanceAfterOverdraft.getBody().get("balance").asText()).isEqualTo("70.00");
+        assertThat(overdraftResponse.getBody().get("currentBalance").asText()).isEqualTo("1154.50");
+        assertThat(balanceAfterOverdraft.getBody().get("balance").asText()).isEqualTo("1154.50");
     }
 
     private ResponseEntity<JsonNode> postTransaction(String json) {
