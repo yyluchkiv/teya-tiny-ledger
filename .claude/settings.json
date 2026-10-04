@@ -1,0 +1,38 @@
+{
+  "plansDirectory": "./plans",
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Read(*)",
+      "WebSearch",
+      "Write(*)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push * main)",
+      "Bash(git push * master)",
+      "Bash(git push origin main)",
+      "Bash(git push origin master)",
+      "Bash(rm -f /*)",
+      "Bash(rm -rf *)",
+      "Bash(find * -delete*)",
+      "Bash(find * -exec*)",
+      "Bash(chmod -R 777 *)",
+      "Bash(sudo *)",
+      "Bash(su *)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Bash(eval *)",
+      "Bash(cat ~/.ssh/*)",
+      "Bash(cat ~/.aws/*)",
+      "Bash(cat ~/.env*)",
+      "Bash(printenv *)",
+      "Bash(env)"
+    ]
+  }
+}
