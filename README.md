@@ -70,7 +70,7 @@ java -jar target/tiny-ledger-0.0.1-SNAPSHOT.jar
 | `GET` | `/api/v1/balance` | — | `200` `{"balance":"100.00"}` | — |
 
 Amounts are sent and returned as strings with two decimal places (numeric JSON values are also accepted on input).
-Errors are returned as [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) `application/problem+json`.
+All errors (including unknown paths, unsupported methods and media types) are returned as [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) `application/problem+json`.
 
 ### Record a deposit
 
@@ -199,7 +199,7 @@ Malformed JSON or an unknown `type` returns `400` with `"title":"Malformed reque
   ledger per account.
 - **Running balance.** The balance is updated alongside each append instead of being recomputed from history, giving
   O(1) reads. Both are mutated under the same lock, so they can never disagree.
-- **`Ledger` owns its invariant.** The domain class `Ledger` holds the history, an id index and the running balance,
+- **`Ledger` owns its invariant.** The in-memory store `Ledger` (package `data`) holds the history, an id index and the running balance,
   and is the only way to record a transaction. Creating the transaction (timestamp), checking that the balance stays
   non-negative and appending all happen under one lock, so concurrent withdrawals cannot overdraw and history order
   matches timestamp order. There is no unchecked "append" to bypass the rule. In a database this would become a
