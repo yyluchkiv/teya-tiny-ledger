@@ -1,9 +1,9 @@
 package com.teya.ledger.api;
 
-import com.teya.ledger.api.dto.BalanceResponse;
-import com.teya.ledger.api.dto.CreateTransactionRequest;
-import com.teya.ledger.api.dto.TransactionResponse;
-import com.teya.ledger.domain.Transaction;
+import com.teya.ledger.domain.response.BalanceResponse;
+import com.teya.ledger.domain.requests.CreateTransactionRequest;
+import com.teya.ledger.domain.response.TransactionResponse;
+import com.teya.ledger.domain.base.Transaction;
 import com.teya.ledger.service.LedgerService;
 import jakarta.validation.Valid;
 import java.net.URI;

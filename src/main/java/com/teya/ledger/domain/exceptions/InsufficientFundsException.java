@@ -1,4 +1,4 @@
-package com.teya.ledger.domain;
+package com.teya.ledger.domain.exceptions;
 
 import java.math.BigDecimal;
 

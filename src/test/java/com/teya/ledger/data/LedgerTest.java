@@ -1,4 +1,4 @@
-package com.teya.ledger.domain;
+package com.teya.ledger.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,6 +17,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.teya.ledger.domain.base.Transaction;
+import com.teya.ledger.domain.base.TransactionType;
+import com.teya.ledger.domain.exceptions.InsufficientFundsException;
 import org.junit.jupiter.api.Test;
 
 class LedgerTest {

@@ -1,4 +1,4 @@
-package com.teya.ledger.domain;
+package com.teya.ledger.domain.base;
 
 import java.math.BigDecimal;
 import java.time.Instant;

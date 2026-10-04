@@ -1,9 +1,10 @@
 package com.teya.ledger.service;
 
-import com.teya.ledger.domain.Ledger;
-import com.teya.ledger.domain.Transaction;
-import com.teya.ledger.domain.TransactionNotFoundException;
-import com.teya.ledger.domain.TransactionType;
+import com.teya.ledger.data.Ledger;
+import com.teya.ledger.domain.base.Transaction;
+import com.teya.ledger.domain.exceptions.InsufficientFundsException;
+import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
+import com.teya.ledger.domain.base.TransactionType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -24,7 +25,7 @@ public class LedgerService {
 
     /**
      * Records a deposit or withdrawal. Withdrawals that exceed the current balance are rejected with
-     * {@link com.teya.ledger.domain.InsufficientFundsException}.
+     * {@link InsufficientFundsException}.
      */
     public Transaction recordTransaction(TransactionType type, BigDecimal amount, String description) {
         return ledger.record(type, normalise(amount), description);

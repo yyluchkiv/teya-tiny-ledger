@@ -1,7 +1,7 @@
 package com.teya.ledger.api;
 
-import com.teya.ledger.domain.InsufficientFundsException;
-import com.teya.ledger.domain.TransactionNotFoundException;
+import com.teya.ledger.domain.exceptions.InsufficientFundsException;
+import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
 import java.util.Map;
 import java.util.TreeMap;
 import org.springframework.http.HttpStatus;

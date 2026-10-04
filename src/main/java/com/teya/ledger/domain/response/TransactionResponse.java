@@ -1,8 +1,8 @@
-package com.teya.ledger.api.dto;
+package com.teya.ledger.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.teya.ledger.domain.Transaction;
-import com.teya.ledger.domain.TransactionType;
+import com.teya.ledger.domain.base.Transaction;
+import com.teya.ledger.domain.base.TransactionType;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;

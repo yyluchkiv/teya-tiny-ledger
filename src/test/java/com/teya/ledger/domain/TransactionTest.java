@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+
+import com.teya.ledger.domain.base.Transaction;
+import com.teya.ledger.domain.base.TransactionType;
 import org.junit.jupiter.api.Test;
 
 class TransactionTest {

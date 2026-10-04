@@ -1,4 +1,4 @@
-package com.teya.ledger.api.dto;
+package com.teya.ledger.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;

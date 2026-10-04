@@ -11,10 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.teya.ledger.domain.InsufficientFundsException;
-import com.teya.ledger.domain.Transaction;
-import com.teya.ledger.domain.TransactionNotFoundException;
-import com.teya.ledger.domain.TransactionType;
+import com.teya.ledger.domain.exceptions.InsufficientFundsException;
+import com.teya.ledger.domain.base.Transaction;
+import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
+import com.teya.ledger.domain.base.TransactionType;
 import com.teya.ledger.service.LedgerService;
 import java.math.BigDecimal;
 import java.time.Instant;
