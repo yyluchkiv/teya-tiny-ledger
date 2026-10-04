@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.teya.ledger.domain.InsufficientFundsException;
 import com.teya.ledger.domain.Transaction;
+import com.teya.ledger.domain.TransactionNotFoundException;
 import com.teya.ledger.domain.TransactionType;
 import com.teya.ledger.service.LedgerService;
 import java.math.BigDecimal;
@@ -77,6 +78,42 @@ class LedgerControllerTest {
                 .andExpect(jsonPath("$[0].id").value(newer.id().toString()))
                 .andExpect(jsonPath("$[0].amount").value("30.00"))
                 .andExpect(jsonPath("$[1].id").value(older.id().toString()));
+    }
+
+    @Test
+    void getTransactionByIdReturnsTransaction() throws Exception {
+        // Arrange
+        Transaction transaction = new Transaction(
+                UUID.randomUUID(), TransactionType.DEPOSIT, new BigDecimal("100.00"), "salary", NOW);
+        when(ledgerService.getTransaction(transaction.id())).thenReturn(transaction);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/transactions/{id}", transaction.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(transaction.id().toString()))
+                .andExpect(jsonPath("$.amount").value("100.00"));
+    }
+
+    @Test
+    void unknownTransactionIdReturnsNotFound() throws Exception {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        when(ledgerService.getTransaction(id)).thenThrow(new TransactionNotFoundException(id));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/transactions/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Transaction not found"))
+                .andExpect(jsonPath("$.id").value(id.toString()));
+    }
+
+    @Test
+    void malformedTransactionIdReturnsBadRequest() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/transactions/not-a-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid request"));
+        verifyNoInteractions(ledgerService);
     }
 
     @Test
