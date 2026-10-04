@@ -4,22 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.teya.ledger.domain.InsufficientFundsException;
+import com.teya.ledger.domain.Ledger;
 import com.teya.ledger.domain.Transaction;
+import com.teya.ledger.domain.TransactionNotFoundException;
 import com.teya.ledger.domain.TransactionType;
-import com.teya.ledger.repository.InMemoryLedgerRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class LedgerServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-10-04T12:00:00Z");
 
-    private final LedgerService service =
-            new LedgerService(new InMemoryLedgerRepository(), Clock.fixed(NOW, ZoneOffset.UTC));
+    private final LedgerService service = new LedgerService(new Ledger(Clock.fixed(NOW, ZoneOffset.UTC)));
 
     @Test
     void depositIncreasesBalanceAndIsRecorded() {
@@ -91,6 +92,28 @@ class LedgerServiceTest {
 
         // Assert
         assertThat(history).containsExactly(second, first);
+    }
+
+    @Test
+    void getTransactionReturnsRecordedTransaction() {
+        // Arrange
+        Transaction recorded = service.recordTransaction(TransactionType.DEPOSIT, new BigDecimal("5.00"), null);
+
+        // Act
+        Transaction found = service.getTransaction(recorded.id());
+
+        // Assert
+        assertThat(found).isEqualTo(recorded);
+    }
+
+    @Test
+    void getTransactionThrowsForUnknownId() {
+        // Arrange
+        UUID unknown = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> service.getTransaction(unknown))
+                .isInstanceOf(TransactionNotFoundException.class);
     }
 
     @Test

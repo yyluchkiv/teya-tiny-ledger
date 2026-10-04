@@ -36,6 +36,8 @@ class LedgerApiIntegrationTest {
 
         // Act
         ResponseEntity<JsonNode> depositResponse = postTransaction(deposit);
+        ResponseEntity<JsonNode> depositByLocation =
+                restTemplate.getForEntity(depositResponse.getHeaders().getLocation(), JsonNode.class);
         ResponseEntity<JsonNode> withdrawalResponse = postTransaction(withdrawal);
         ResponseEntity<JsonNode> balanceAfterWithdrawal = restTemplate.getForEntity("/api/v1/balance", JsonNode.class);
         ResponseEntity<JsonNode> history = restTemplate.getForEntity("/api/v1/transactions", JsonNode.class);
@@ -44,7 +46,8 @@ class LedgerApiIntegrationTest {
 
         // Assert
         assertThat(depositResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(depositResponse.getHeaders().getLocation()).isNotNull();
+        assertThat(depositByLocation.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(depositByLocation.getBody()).isEqualTo(depositResponse.getBody());
         assertThat(withdrawalResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         assertThat(balanceAfterWithdrawal.getStatusCode()).isEqualTo(HttpStatus.OK);

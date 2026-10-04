@@ -1,5 +1,6 @@
 package com.teya.ledger;
 
+import com.teya.ledger.domain.Ledger;
 import java.time.Clock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,5 +16,10 @@ public class TinyLedgerApplication {
     @Bean
     Clock clock() {
         return Clock.systemUTC();
+    }
+
+    @Bean
+    Ledger ledger(Clock clock) {
+        return new Ledger(clock);
     }
 }

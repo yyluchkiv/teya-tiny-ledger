@@ -1,13 +1,13 @@
 package com.teya.ledger.service;
 
+import com.teya.ledger.domain.Ledger;
 import com.teya.ledger.domain.Transaction;
+import com.teya.ledger.domain.TransactionNotFoundException;
 import com.teya.ledger.domain.TransactionType;
-import com.teya.ledger.repository.InMemoryLedgerRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +16,10 @@ public class LedgerService {
 
     private static final int SCALE = 2;
 
-    private final InMemoryLedgerRepository repository;
-    private final Clock clock;
+    private final Ledger ledger;
 
-    public LedgerService(InMemoryLedgerRepository repository, Clock clock) {
-        this.repository = repository;
-        this.clock = clock;
+    public LedgerService(Ledger ledger) {
+        this.ledger = ledger;
     }
 
     /**
@@ -29,22 +27,22 @@ public class LedgerService {
      * {@link com.teya.ledger.domain.InsufficientFundsException}.
      */
     public Transaction recordTransaction(TransactionType type, BigDecimal amount, String description) {
-        Transaction transaction = new Transaction(
-                UUID.randomUUID(), type, normalise(amount), description, Instant.now(clock));
-        return type == TransactionType.WITHDRAWAL
-                ? repository.appendIfSufficient(transaction)
-                : repository.append(transaction);
+        return ledger.record(type, normalise(amount), description);
     }
 
     public BigDecimal getBalance() {
-        return normalise(repository.balance());
+        return ledger.balance();
     }
 
     public List<Transaction> getHistory() {
-        return repository.findAllNewestFirst();
+        return ledger.history();
+    }
+
+    public Transaction getTransaction(UUID id) {
+        return ledger.find(id).orElseThrow(() -> new TransactionNotFoundException(id));
     }
 
     private static BigDecimal normalise(BigDecimal amount) {
-        return amount.setScale(SCALE, RoundingMode.UNNECESSARY);
+        return Objects.requireNonNull(amount, "amount").setScale(SCALE, RoundingMode.UNNECESSARY);
     }
 }
