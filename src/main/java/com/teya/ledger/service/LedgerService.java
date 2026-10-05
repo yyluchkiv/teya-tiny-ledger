@@ -1,10 +1,10 @@
 package com.teya.ledger.service;
 
-import com.teya.ledger.data.Ledger;
+import com.teya.ledger.domain.Ledger;
 import com.teya.ledger.domain.base.Transaction;
+import com.teya.ledger.domain.base.TransactionType;
 import com.teya.ledger.domain.exceptions.InsufficientFundsException;
 import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
-import com.teya.ledger.domain.base.TransactionType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;

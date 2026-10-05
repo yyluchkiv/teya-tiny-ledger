@@ -1,6 +1,6 @@
 package com.teya.ledger;
 
-import com.teya.ledger.data.Ledger;
+import com.teya.ledger.domain.Ledger;
 import java.time.Clock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

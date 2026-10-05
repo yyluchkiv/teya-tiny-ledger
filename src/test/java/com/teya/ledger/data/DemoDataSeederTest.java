@@ -2,6 +2,7 @@ package com.teya.ledger.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.teya.ledger.domain.Ledger;
 import com.teya.ledger.domain.base.Transaction;
 import com.teya.ledger.domain.base.TransactionType;
 import com.teya.ledger.service.LedgerService;

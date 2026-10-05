@@ -1,4 +1,4 @@
-package com.teya.ledger.domain.requests;
+package com.teya.ledger.api.dto;
 
 import com.teya.ledger.domain.base.TransactionType;
 import jakarta.validation.constraints.Digits;
