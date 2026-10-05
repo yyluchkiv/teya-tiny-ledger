@@ -178,43 +178,27 @@ Malformed JSON or an unknown `type` returns `400` with `"title":"Malformed reque
 
 ## Assumptions
 
-- One ledger only (no accounts / multi-tenancy); the task does not mention accounts, so the simplest model is used.
-- Single currency; amounts carry no currency code.
-- Amounts are decimals, must be strictly positive, at most 2 decimal places; direction is given by `type` (`DEPOSIT` / `WITHDRAWAL`), not by sign.
-- A withdrawal greater than the current balance is rejected (balance can never go negative) with HTTP 422.
-- Transactions are immutable: no update, delete, or reversal endpoints.
-- Balance is a running total updated on each write (O(1) read), kept consistent with the stored history.
-- History is returned newest-first, unpaginated (in-memory, small data volumes). "Newest" means most recently
-  recorded; timestamps are assigned under the same lock as the append, so the two orders always agree.
-- Transaction IDs are server-generated UUIDs; timestamps are server-generated UTC instants.
-- Optional free-text `description` field (max 255 characters) on a transaction.
-- Data is lost on restart; every start begins from the same demo data (see [Demo data](#demo-data)).
+- One ledger, one currency: the task mentions neither accounts nor currencies.
+- Amounts are strictly positive decimals with at most 2 decimal places; the direction comes from `type`
+  (`DEPOSIT` / `WITHDRAWAL`), not from the sign.
+- The balance can never go negative: an overdrawing withdrawal is rejected with `422`.
+- Transactions are immutable (no update, delete or reversal). IDs are server-generated UUIDs, timestamps are
+  server-generated UTC instants, and `description` is optional (max 255 characters).
+- History is returned newest-first and is not paginated (small in-memory data volumes).
+- Data lives in memory only and is lost on restart; every start begins from the same [demo data](#demo-data).
 - Out of scope: authentication/authorization, logging/monitoring, persistence, idempotency keys.
-  Concurrency is handled with a single lock in the `Ledger` (see below), so it stays consistent under concurrent
-  requests without extra infrastructure.
 
 ## Design decisions / trade-offs
 
-- **Single ledger.** Keeps the model and API minimal; adding accounts would mean an `/accounts/{id}` path prefix and a
-  ledger per account.
-- **Running balance.** The balance is updated alongside each append instead of being recomputed from history, giving
-  O(1) reads. Both are mutated under the same lock, so they can never disagree.
-- **`Ledger` owns its invariant.** The in-memory store `Ledger` (package `data`) holds the history, an id index and the running balance,
-  and is the only way to record a transaction. Creating the transaction (timestamp), checking that the balance stays
-  non-negative and appending all happen under one lock, so concurrent withdrawals cannot overdraw and history order
-  matches timestamp order. There is no unchecked "append" to bypass the rule. In a database this would become a
-  conditional update, `SELECT … FOR UPDATE`, or optimistic locking on a version column.
-- **Data structures: `ArrayList` + `HashMap` behind one lock, not concurrent collections.** The invariant spans three
-  pieces of state (list, index, balance), and concurrent collections only make *individual* operations thread-safe —
-  the check-then-append would still need a lock, so they would add cost without removing it. `ArrayList` gives O(1)
-  amortised appends and index access (cheap offset pagination later); `HashMap` gives O(1) lookup by id.
-  `CopyOnWriteArrayList` was rejected because it copies the whole array on every write, the wrong trade-off for a
-  write-heavy ledger.
-- **Known limitation: one lock serialises all traffic,** and `GET /transactions` copies the full history while holding
-  it. Fine for an in-memory demo. Next steps would be pagination (copy only one page under the lock) or publishing an
-  immutable snapshot (`AtomicReference` to a persistent list + balance) so reads never take the lock.
-- **`BigDecimal` serialised as strings.** Avoids floating-point rounding in clients and keeps a stable `"70.00"` format.
-- **What would change for production:** a database with transactional writes (or row-level locking / optimistic
-  concurrency) instead of the in-memory ledger, accounts and currencies, idempotency keys on `POST` so retries don't
-  double-post, pagination of history, authentication/authorization, and structured logging/metrics.
-
+- **`Ledger` owns the invariant.** The in-memory store `Ledger` (package `data`) is the only way to record a transaction. It holds the
+  history, an id index and a running balance, which gives O(1) balance reads. Assigning the timestamp, checking the
+  balance and appending all happen under one lock, so concurrent withdrawals cannot overdraw and history order always
+  matches timestamp order. In a database this would become a conditional update or `SELECT … FOR UPDATE`.
+- **One lock instead of concurrent collections.** The invariant spans three pieces of state. Concurrent collections
+  only make *individual* operations thread-safe, so the check-then-append would still need a lock. `ArrayList` +
+  `HashMap` give O(1) appends and O(1) lookup by id. `CopyOnWriteArrayList` would copy the whole array on every write.
+- **Known limitation:** the single lock serialises all traffic, and `GET /transactions` copies the full history while
+  holding it. That is fine for an in-memory demo; pagination or an immutable snapshot would remove it.
+- **`BigDecimal` serialised as strings** to avoid floating-point rounding in clients and keep a stable `"70.00"` format.
+- **For production:** a database with transactional writes, accounts and currencies, idempotency keys on `POST`,
+  paginated history, auth, and structured logging/metrics.

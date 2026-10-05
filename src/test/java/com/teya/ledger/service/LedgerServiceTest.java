@@ -3,11 +3,11 @@ package com.teya.ledger.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.teya.ledger.domain.exceptions.InsufficientFundsException;
 import com.teya.ledger.data.Ledger;
 import com.teya.ledger.domain.base.Transaction;
-import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
 import com.teya.ledger.domain.base.TransactionType;
+import com.teya.ledger.domain.exceptions.InsufficientFundsException;
+import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;

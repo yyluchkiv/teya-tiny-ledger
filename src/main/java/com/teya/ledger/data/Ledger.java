@@ -3,7 +3,6 @@ package com.teya.ledger.data;
 import com.teya.ledger.domain.base.Transaction;
 import com.teya.ledger.domain.base.TransactionType;
 import com.teya.ledger.domain.exceptions.InsufficientFundsException;
-
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
