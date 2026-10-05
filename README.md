@@ -70,7 +70,7 @@ java -jar target/tiny-ledger-0.0.1-SNAPSHOT.jar
 | `GET` | `/api/v1/balance` | — | `200` `{"balance":"100.00"}` | — |
 
 Amounts are sent and returned as strings with two decimal places (numeric JSON values are also accepted on input).
-Errors are returned as [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) `application/problem+json`.
+All errors (including unknown paths, unsupported methods and media types) are returned as [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) `application/problem+json`.
 
 ### Record a deposit
 
@@ -190,7 +190,7 @@ Malformed JSON or an unknown `type` returns `400` with `"title":"Malformed reque
 
 ## Design decisions / trade-offs
 
-- **`Ledger` owns the invariant.** The domain class `Ledger` is the only way to record a transaction. It holds the
+- **`Ledger` owns the invariant.** The in-memory store `Ledger` (package `data`) is the only way to record a transaction. It holds the
   history, an id index and a running balance, which gives O(1) balance reads. Assigning the timestamp, checking the
   balance and appending all happen under one lock, so concurrent withdrawals cannot overdraw and history order always
   matches timestamp order. In a database this would become a conditional update or `SELECT … FOR UPDATE`.

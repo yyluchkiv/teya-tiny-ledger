@@ -1,4 +1,4 @@
-package com.teya.ledger.domain;
+package com.teya.ledger.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

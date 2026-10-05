@@ -5,8 +5,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -202,5 +204,26 @@ class LedgerControllerTest {
                 .andExpect(jsonPath("$.title").value("Insufficient funds"))
                 .andExpect(jsonPath("$.requestedAmount").value("1000.00"))
                 .andExpect(jsonPath("$.currentBalance").value("70.00"));
+    }
+
+    @Test
+    void unsupportedMethodReturnsProblemDetail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(delete("/api/v1/balance"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(405));
+    }
+
+    @Test
+    void unsupportedMediaTypeReturnsProblemDetail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/transactions")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("100"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(415));
+        verifyNoInteractions(ledgerService);
     }
 }
