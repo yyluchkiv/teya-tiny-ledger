@@ -1,7 +1,10 @@
 package com.teya.ledger.api;
 
+import com.teya.ledger.domain.exceptions.AccountNotFoundException;
 import com.teya.ledger.domain.exceptions.InsufficientFundsException;
+import com.teya.ledger.domain.exceptions.SameAccountTransferException;
 import com.teya.ledger.domain.exceptions.TransactionNotFoundException;
+import com.teya.ledger.domain.exceptions.TransferNotFoundException;
 import java.util.Map;
 import java.util.TreeMap;
 import org.springframework.beans.TypeMismatchException;
@@ -62,6 +65,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Transaction not found");
         problem.setProperty("id", ex.getId().toString());
+        return problem;
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ProblemDetail handleAccountNotFound(AccountNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Account not found");
+        problem.setProperty("id", ex.getId().toString());
+        return problem;
+    }
+
+    @ExceptionHandler(TransferNotFoundException.class)
+    public ProblemDetail handleTransferNotFound(TransferNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Transfer not found");
+        problem.setProperty("id", ex.getId().toString());
+        return problem;
+    }
+
+    @ExceptionHandler(SameAccountTransferException.class)
+    public ProblemDetail handleSameAccountTransfer(SameAccountTransferException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid transfer");
         return problem;
     }
 
